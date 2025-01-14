@@ -10,27 +10,29 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // MongoDB Connection
-try {
-    mongoose.connect('mongodb://localhost:27017/google-sheets-clone', {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
-    console.log("Connected to MongoDB");
-} catch (error) {
-    console.error("MongoDB connection error:", error);
-}
+mongoose.connect('mongodb://localhost:27017/google-sheets-clone', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
 
 // Schema and Model
 const CellSchema = new mongoose.Schema({
     row: Number,
     column: Number,
     value: String,
+    dataType: { type: String, enum: ['number', 'text', 'date'], default: 'text' },
     dependencies: [String],
+    styles: {
+        bold: Boolean,
+        italic: Boolean,
+        fontSize: Number,
+        color: String,
+    },
 });
 
 const Cell = mongoose.model('Cell', CellSchema);
 
-// Helper Function for Mathematical Operations
+// Helper Functions
 const performMathOperation = (operation, range, data) => {
     const cells = range.map(([row, col]) => {
         const cell = data.find((cell) => cell.row === row && cell.column === col);
@@ -53,84 +55,74 @@ const performMathOperation = (operation, range, data) => {
     }
 };
 
-// Helper Functions for Data Quality
-const performDataQualityOperation = (operation, data) => {
+const performDataQualityOperation = (operation, range, data) => {
+    let result = [];
+
     switch (operation) {
         case 'TRIM':
-            return data.map((cell) => ({ ...cell, value: cell.value.trim() }));
+            result = data.map((cell) => ({ ...cell, value: cell.value.trim() }));
+            break;
         case 'UPPER':
-            return data.map((cell) => ({ ...cell, value: cell.value.toUpperCase() }));
+            result = data.map((cell) => ({ ...cell, value: cell.value.toUpperCase() }));
+            break;
         case 'LOWER':
-            return data.map((cell) => ({ ...cell, value: cell.value.toLowerCase() }));
+            result = data.map((cell) => ({ ...cell, value: cell.value.toLowerCase() }));
+            break;
         case 'REMOVE_DUPLICATES':
-            return Array.from(new Set(data.map((cell) => JSON.stringify(cell)))).map((cell) => JSON.parse(cell));
+            const seen = new Set();
+            result = data.filter((cell) => {
+                const key = `${cell.row}-${cell.column} -${cell.value}`;
+                if (seen.has(key)) {
+                    return false;
+                }
+                seen.add(key);
+                return true;
+            });
+            break;
+        case 'FIND_AND_REPLACE':
+            const { findText, replaceText } = range;
+            result = data.map((cell) => ({
+                ...cell,
+                value: cell.value.replace(new RegExp(findText, 'g'), replaceText),
+            }));
+            break;
         default:
-            return data;
+            result = data;
     }
+
+    return result;
 };
 
 // API Routes
 app.get('/api/cells', async (req, res) => {
-    try {
-        const cells = await Cell.find();
-        res.json(cells.length ? cells : []); // Return an empty array if no data is found
-    } catch (error) {
-        console.error("Error fetching cells:", error);
-        res.status(500).json({ error: "Error fetching cells" }); // Ensure valid JSON error response
-    }
+    const cells = await Cell.find();
+    res.json(cells);
 });
-
 
 app.post('/api/cells', async (req, res) => {
-    try {
-        const { row, column, value, dependencies } = req.body;
-        const cell = new Cell({ row, column, value, dependencies });
-        await cell.save();
-        res.json(cell);
-    } catch (error) {
-        console.error("Error saving cell:", error);
-        res.status(500).send("Error saving cell");
+    const { row, column, value, dataType, dependencies, styles } = req.body;
+    if (dataType === 'number' && isNaN(value)) {
+        return res.status(400).json({ error: 'Value must be a number for numeric cells.' });
     }
-});
-
-app.put('/api/cells/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { value } = req.body;
-        const cell = await Cell.findByIdAndUpdate(id, { value }, { new: true });
-        res.json(cell);
-    } catch (error) {
-        console.error("Error updating cell:", error);
-        res.status(500).send("Error updating cell");
-    }
+    const cell = new Cell({ row, column, value, dataType, dependencies, styles });
+    await cell.save();
+    res.json(cell);
 });
 
 app.post('/api/calculate', async (req, res) => {
-    try {
-        const { operation, range } = req.body;
-        const cells = await Cell.find();
-        const result = performMathOperation(operation, range, cells);
-        res.json({ result });
-    } catch (error) {
-        console.error("Error calculating operation:", error);
-        res.status(500).send("Error calculating operation");
-    }
+    const { operation, range } = req.body;
+    const cells = await Cell.find();
+    const result = performMathOperation(operation, range, cells);
+    res.json({ result });
 });
 
 app.post('/api/data-quality', async (req, res) => {
-    try {
-        const { operation } = req.body;
-        let cells = await Cell.find();
-        cells = performDataQualityOperation(operation, cells);
-        res.json(cells);
-    } catch (error) {
-        console.error("Error performing data quality operation:", error);
-        res.status(500).send("Error performing data quality operation");
-    }
+    const { operation, range } = req.body;
+    const cells = await Cell.find();
+    const result = performDataQualityOperation(operation, range, cells);
+    res.json(result);
 });
 
-// New server port: 5001
-const PORT = 5001;
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.listen(6000, () => {
+    console.log('Server running on http://localhost:6000');
 });

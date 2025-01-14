@@ -1,137 +1,173 @@
 Google Sheets Clone
 
-This project is a simple implementation of a Google Sheets-like application built with a MERN (MongoDB, Express, React, Node.js) stack. It allows users to perform basic spreadsheet operations such as data input, mathematical calculations, and data quality operations. The backend handles data storage and operations while the frontend provides an interactive user interface.
+Overview
+
+This project is a web-based application that mimics the core functionalities of Google Sheets. It features a spreadsheet interface for data entry, supports mathematical and data quality operations, and includes data validation mechanisms. The application is built using the MERN stack (MongoDB, Express.js, React, Node.js) with Handsontable.js for the frontend spreadsheet UI.
 
 Features
 
-Spreadsheet Operations:
+Spreadsheet Interface
 
-Add, edit, and delete cell values.
+Mimics Google Sheets UI:
 
-Perform mathematical operations like SUM, AVERAGE, MAX, MIN, and COUNT.
+Toolbar for operations and formula input.
 
-Handle data quality operations like TRIM, UPPERCASE, LOWERCASE, and REMOVE_DUPLICATES.
+Spreadsheet-like grid with row and column headers.
 
-Technologies Used:
+Real-Time Updates:
 
-Frontend: React, Handsontable.
+Cell data changes are reflected dynamically.
 
-Backend: Express.js, Node.js.
+Backend synchronization for persistent data storage.
 
-Database: MongoDB.
+Mathematical Functions
+
+Supported functions:
+
+SUM: Calculates the sum of a range of cells.
+
+AVERAGE: Calculates the average of a range of cells.
+
+MAX: Finds the maximum value in a range.
+
+MIN: Finds the minimum value in a range.
+
+COUNT: Counts the number of numeric entries in a range.
+
+Data Quality Functions
+
+TRIM: Removes leading and trailing whitespace.
+
+UPPER: Converts text to uppercase.
+
+LOWER: Converts text to lowercase.
+
+REMOVE_DUPLICATES: Removes duplicate entries from the spreadsheet.
+
+FIND_AND_REPLACE: Finds and replaces specific text in cells.
+
+Data Entry and Validation
+
+Accepts various data types: Numbers, Text, and Dates.
+
+Ensures numeric cells only accept valid numbers.
+
+Displays errors for invalid inputs.
+
+Testing Interface
+
+Allows users to test functions with custom data and ranges.
+
+Displays results of function execution clearly.
+
+Provides error messages for invalid ranges or unsupported operations.
+
+Tech Stack
+
+Frontend:
+
+React.js
+
+Handsontable.js for spreadsheet functionality.
+
+Backend:
+
+Node.js with Express.js.
+
+MongoDB for data persistence.
+
+Styling:
+
+Basic CSS for layout and styling.
+
+Installation and Setup
 
 Prerequisites
 
-Node.js (v14 or later)
+Node.js: Install from Node.js.
 
-MongoDB (installed and running locally or via a cloud service)
+MongoDB: Install and start MongoDB locally or use a cloud service.
 
-Getting Started
+Git: Install from Git.
 
-1. Clone the Repository
-git clone https://github.com/yourusername/google-sheets-clone.git
-cd google-sheets-clone
+Steps
 
-2. Install Dependencies
+Clone the Repository:
 
-Backend:
+git clone <repository-link>
+cd <repository-folder>
 
-cd backend
+Install Backend Dependencies:
+
 npm install
 
-Frontend:
-cd ../frontend
+Start MongoDB:
+
+Ensure MongoDB is running on localhost:27017.
+
+Run the Backend Server:
+
+node server.js
+
+Install Frontend Dependencies:
+
+cd client
 npm install
 
-3. Start MongoDB
+Start the Frontend Server:
 
-Ensure MongoDB is running locally on port 27017 or update the connection string in the backend code if using a different setup.
-
-4. Start the Application
-
-Backend:
-cd backend
 npm start
-The backend server will start at http://localhost:5000.
 
-Frontend:
-cd ../frontend
-npm start
-The frontend server will start at http://localhost:3000.
+Access the Application:
 
-Sample Data
+Open http://localhost:3000 in your browser.
 
-To populate the database with sample data, run the following MongoDB commands:
-use google-sheets-clone
-
-db.cells.insertMany([
-  { row: 0, column: 0, value: "10" },
-  { row: 0, column: 1, value: "20" },
-  { row: 0, column: 2, value: "30" },
-  { row: 1, column: 0, value: "40" },
-  { row: 1, column: 1, value: "50" },
-  { row: 1, column: 2, value: "60" },
-  { row: 2, column: 0, value: "Apple" },
-  { row: 2, column: 1, value: "Banana" },
-  { row: 2, column: 2, value: "Cherry" },
-  { row: 3, column: 0, value: "90" },
-  { row: 3, column: 1, value: "100" },
-  { row: 3, column: 2, value: "110" },
-  { row: 4, column: 0, value: "200" },
-  { row: 4, column: 1, value: "300" },
-  { row: 4, column: 2, value: "400" }
-]);
-
-Usage Instructions
+API Endpoints
 
 Mathematical Operations
 
-Enter the operation (e.g., SUM, AVERAGE, MAX, MIN, or COUNT) in the provided input box.
+POST /api/calculate
 
-Specify the range of cells in the format [[row1, col1], [row2, col2]].
+Body:
 
-Click "Calculate" to get the result.
+{
+  "operation": "SUM",
+  "range": [[0,0],[0,1]]
+}
 
 Data Quality Operations
 
-Click the appropriate button for the operation you want to perform:
+POST /api/data-quality
 
-Trim Whitespace: Removes leading and trailing spaces from all cell values.
+Body:
 
-Uppercase: Converts all cell values to uppercase.
+{
+  "operation": "TRIM"
+}
 
-Lowercase: Converts all cell values to lowercase.
+Cell Management
 
-Remove Duplicates: Removes duplicate cell entries.
+GET /api/cells: Fetches all cells.
 
-File Structure
+POST /api/cells: Adds or updates a cell.
 
-Backend (/backend):
+Future Enhancements
 
-server.js: Entry point for the backend server.
+Advanced Formulas: Support for complex formulas like =IF, =VLOOKUP.
 
-models/Cell.js: Mongoose schema for cell data.
+Graphical Visualizations: Adding charts and graphs.
 
-routes/: Contains API routes.
-
-Frontend (/frontend):
-
-src/App.js: Main React component.
-
-src/components/: Contains reusable components.
-
-src/styles/: CSS and styling files.
+User Authentication: Role-based access control.
 
 License
 
-This project is licensed under the MIT License. Feel free to use, modify, and distribute it as needed.
-
-Contribution
-
-Contributions are welcome! Feel free to fork the repository and submit a pull request.
+This project is open-source and available under the MIT License.
 
 Contact
 
-For any queries or feedback, reach out to adityasrivastava1702@gmail.com.
+For issues or contributions, feel free to reach out:
 
+Email: adityasrivastava1702@gmail.com
+
+GitHub: https://github.com/itz-mr-srivastava
 
